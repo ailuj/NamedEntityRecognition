@@ -19,6 +19,26 @@ def load_stop_words():
 	f.close()
 	return stop_word_list
 
+def load_input_file(input_file):
+	f=open(input_file,"r")
+	text_list = []
+	current_sentence = ""
+	for line in f.readlines():
+		if line !="\n":
+			word, tag=line.split("\t")
+			current_sentence=current_sentence+" "+word
+		else:
+			token=nltk.regexp_tokenize(current_sentence, "[a-zA-Z'`0-9\.%<>=]+")
+			pos_tags=nltk.pos_tag(token)
+			sentence=""
+			for i in range(0, len(pos_tags)):
+				sentence=sentence+" "+pos_tags[i][0]+"/"+pos_tags[i][1]
+			text_list.append(sentence)
+			current_sentence=""
+	f.close()
+	print (text_list)
+	return text_list
+
 def load_annotated_sentence_list():
 	f=open("uebung4-training.iob","r")
 	text_list=[]
@@ -74,7 +94,7 @@ def build_ruleset(annotated_sentence_list, gene_list, stop_word_list):
 	final_frequencies={}
 	for word in word_frequencies:
 		if word_frequencies[word]!=1 and word not in stop_word_list:
-			print(word)
+			#print(word)
 			final_frequencies[word]=word_frequencies[word]
 			#print(final_frequencies)
 
@@ -113,7 +133,7 @@ def main(argv):
 	#load training file	#input file if
 	annotated_sentence_list=load_annotated_sentence_list()
 	rules=build_ruleset(annotated_sentence_list, gene_list, stop_word_list)
-	
+	annotated_input=load_input_file(args.input_file)
 
 if __name__ == '__main__':
 	main(sys.argv)
