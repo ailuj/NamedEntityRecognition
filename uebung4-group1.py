@@ -2,6 +2,10 @@ import sys
 import argparse
 import nltk
 
+#TODO ruleset normalization, remove ".", remove unspecific rules, remove single protein rules
+#TODO named entity recognition methods
+#TODO write results to file
+
 def load_gene_list():
 	f=open("human-genenames.txt","r")
 	gene_list=[]
