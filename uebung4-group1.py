@@ -121,6 +121,24 @@ def build_ruleset(annotated_sentence_list, gene_list, stop_word_list):
 		#print(rule)
 	return rules
 
+def find_Entities_rulebased(sentence, rules):
+	return
+
+def find_Entities_structbased(sentence):
+	return
+
+def find_Entities_dictbased(sentence):
+	return
+
+def find_Entities(input_file, rules):
+	for sentence in input_file:
+		potential_Entities_by_Rule=find_Entities_rulebased(sentence, rules)
+		potential_Entities_by_Struct=find_Entities_structbased(sentence)
+		potenital_Entities_by_dict=find_Entities_dictbased(sentence)
+		#calc occurences of potential proteins and decide on I or B-protein tag
+		#return iob-tagged strings
+
+
 def main(argv):
 	parser = argparse.ArgumentParser()
 	parser.add_argument("input_file", help="input file for annotation")
