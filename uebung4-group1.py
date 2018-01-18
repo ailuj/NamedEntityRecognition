@@ -138,6 +138,8 @@ def find_Entities(input_file, rules):
 		#calc occurences of potential proteins and decide on I or B-protein tag
 		#return iob-tagged strings
 
+def write_results_to_file(iob_tagged_input, input_file):
+	return
 
 def main(argv):
 	parser = argparse.ArgumentParser()
@@ -152,6 +154,8 @@ def main(argv):
 	annotated_sentence_list=load_annotated_sentence_list()
 	rules=build_ruleset(annotated_sentence_list, gene_list, stop_word_list)
 	annotated_input=load_input_file(args.input_file)
+	iob_tagged_input=find_Entities(annotated_input,rules)
+	write_results_to_file(iob_tagged_input, args.input_file)
 
 if __name__ == '__main__':
 	main(sys.argv)
