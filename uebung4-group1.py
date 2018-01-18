@@ -36,7 +36,7 @@ def load_input_file(input_file):
 			text_list.append(sentence)
 			current_sentence=""
 	f.close()
-	print (text_list)
+	#print (text_list)
 	return text_list
 
 def load_annotated_sentence_list():
@@ -87,8 +87,22 @@ def build_ruleset(annotated_sentence_list, gene_list, stop_word_list):
 				for ngram in nltk.ngrams(annotated_words,n):
 					ngram_String=" ".join(ngram)
 					if "/B" in ngram_String:
-						total_ngrams.append(ngram_String)
-					
+						occurences=ngram_String.count("/B")
+
+						#if multiple B in ngram, then adapt ngram, so only one protein is considered
+						if occurences>=2:
+							for i in range (0, occurences):
+								copy_ngram=ngram
+								b_counter=0
+								final_ngram=""
+								for word in copy_ngram:
+									if "/B" in word:
+										if b_counter==i:
+											word.replace("/B","/O")
+										final_ngram=" "+word
+								total_ngrams.append(final_ngram)
+						else:
+							total_ngrams.append(ngram_String)
 
 	#print (word_frequencies)
 	final_frequencies={}
@@ -117,8 +131,8 @@ def build_ruleset(annotated_sentence_list, gene_list, stop_word_list):
 				rule=rule+" /"+tag
 				tag_count+=1
 		if not tag_count>=ngram_length-1:
-			rules.append(rule)								
-		#print(rule)
+			rules.append(rule)
+		print(rule)
 	return rules
 
 def find_Entities_rulebased(sentence, rules):
