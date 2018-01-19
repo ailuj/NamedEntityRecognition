@@ -41,11 +41,10 @@ def load_input_file(input_file):
 			pos_tags=nltk.pos_tag(token)
 			sentence=""
 			for i in range(0, len(pos_tags)):
-				sentence=sentence+" "+pos_tags[i][0]+"/"+pos_tags[i][1]
+				sentence=sentence+" "+pos_tags[i][0]+"/"+pos_tags[i][1]+"/"+str(i)
 			text_list.append(sentence)
 			current_sentence=""
 	f.close()
-	#print (text_list)
 	return text_list
 
 def load_annotated_sentence_list():
@@ -145,8 +144,8 @@ def build_ruleset(annotated_sentence_list, gene_list, stop_word_list):
 				tag_count+=1
 		if tag_count<len(parts) and word_count>minimal_occ_of_word_in_rule:
 			rules.append(rule.rstrip())
-			print (rule)
-	print(len(rules))
+			#print (rule)
+	#print(len(rules))
 	return rules
 
 def find_Entities_rulebased(sentence, rules):
@@ -159,9 +158,10 @@ def find_Entities_rulebased(sentence, rules):
 				if len(ngram)==len(rule_parts):
 					match=True
 					contender=""
+					contender_pos=0
 					for i in range (0,len(ngram)):
 						#print (ngram[i])
-						ngram_word,ngram_tag=ngram[i].split("/")
+						ngram_word,ngram_tag,pos=ngram[i].split("/")
 						if "/" in rule_parts[i]:
 							if "/"+ngram_tag!=rule_parts[i]:
 								match=False
@@ -169,12 +169,13 @@ def find_Entities_rulebased(sentence, rules):
 							if "." in ngram_tag:
 								match=False
 							else:
+								contender_pos=pos
 								contender=ngram_word
 						elif ngram_word!=rule_parts[i]:
 							match=False
 					if match==True:
-						print (">"+contender+" matches rule \""+rule+"\"")
-						entities.add(contender)
+						print (">"+contender,contender_pos+" matches rule \""+rule+"\"")
+						entities.add((contender,contender_pos))
 	return entities
 
 def find_Entities_structbased(sentence):
@@ -188,6 +189,7 @@ def find_Entities(input_file, rules):
 		potential_Entities_by_Rule=find_Entities_rulebased(sentence, rules)
 		potential_Entities_by_Struct=find_Entities_structbased(sentence)
 		potenital_Entities_by_dict=find_Entities_dictbased(sentence)
+		print(potential_Entities_by_Rule)
 		#calc occurences of potential proteins and decide on I or B-protein tag
 		#return iob-tagged strings
 
