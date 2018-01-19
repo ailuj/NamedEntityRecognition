@@ -119,7 +119,7 @@ def build_ruleset(annotated_sentence_list, gene_list, stop_word_list):
 	for ngram in total_ngrams:
 		rule=""
 		parts=ngram.split()
-		ngram_length=len(ngram)
+		ngram_length=len(parts)
 		tag_count=0
 		for part in parts:
 			word,iob,tag=part.split("/")
@@ -136,7 +136,7 @@ def build_ruleset(annotated_sentence_list, gene_list, stop_word_list):
 				tag_count+=1
 		if not tag_count>=ngram_length-1:
 			rules.append(rule)
-		print(rule)
+			print(rule)
 	return rules
 
 def find_Entities_rulebased(sentence, rules):
