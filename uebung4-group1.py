@@ -6,6 +6,11 @@ import nltk
 #TODO named entity recognition methods
 #TODO write results to file
 
+minimal_word_occurences=1
+ngram_range=(4,8)
+minimal_occ_of_word_in_rule=2
+
+
 def load_gene_list():
 	f=open("human-genenames.txt","r")
 	gene_list=[]
@@ -87,7 +92,7 @@ def build_ruleset(annotated_sentence_list, gene_list, stop_word_list):
 				else:
 					word_frequencies[word]=1
 		#build ngrams
-			for n in range(2,5):
+			for n in range(ngram_range[0],ngram_range[1]):
 				for ngram in nltk.ngrams(annotated_words,n):
 					ngram_String=" ".join(ngram)
 					if "/B" in ngram_String:
@@ -111,36 +116,66 @@ def build_ruleset(annotated_sentence_list, gene_list, stop_word_list):
 	#print (word_frequencies)
 	final_frequencies={}
 	for word in word_frequencies:
-		if word_frequencies[word]!=1 and word not in stop_word_list:
-			#print(word)
+		if word_frequencies[word]>=minimal_word_occurences and word not in stop_word_list:
+			#print(word)n
 			final_frequencies[word]=word_frequencies[word]
-			#print(final_frequencies)
 
 	for ngram in total_ngrams:
 		rule=""
 		parts=ngram.split()
 		ngram_length=len(parts)
 		tag_count=0
+		word_count=0
 		for part in parts:
 			word,iob,tag=part.split("/")
 			#print(word,iob,tag)
 			if iob=="B-protein":
 				rule=rule+" [PROTEIN]"
+				tag_count+=1
 			elif word in stop_word_list:
 				rule=rule+" /"+tag
 				tag_count+=1
+			elif "." in tag:
+				tag_count+=1
 			elif word in final_frequencies:
+				word_count+=1
 				rule=rule+" "+word
 			else:
 				rule=rule+" /"+tag
 				tag_count+=1
-		if not tag_count>=ngram_length-1:
-			rules.append(rule)
-			print(rule)
+		if tag_count<len(parts) and word_count>minimal_occ_of_word_in_rule:
+			rules.append(rule.rstrip())
+			print (rule)
+	print(len(rules))
 	return rules
 
 def find_Entities_rulebased(sentence, rules):
-	return
+	print("Analyzing sentence \""+sentence+"\"")
+	entities=set()
+	for n in range(ngram_range[0],ngram_range[1]):
+		for ngram in nltk.ngrams(sentence.rsplit(), n):
+			for rule in rules:
+				rule_parts=rule.split()
+				if len(ngram)==len(rule_parts):
+					match=True
+					contender=""
+					for i in range (0,len(ngram)):
+						#print (ngram[i])
+						ngram_word,ngram_tag=ngram[i].split("/")
+						if "/" in rule_parts[i]:
+							if "/"+ngram_tag!=rule_parts[i]:
+								match=False
+						elif "[PROTEIN]" in rule_parts[i]:
+							if "." in ngram_tag:
+								match=False
+							else:
+								contender=ngram_word
+						elif ngram_word!=rule_parts[i]:
+							match=False
+					if match==True:
+						print (">"+contender+" matches rule \""+rule+"\"")
+						entities.add(contender)
+	return entities
 
 def find_Entities_structbased(sentence):
 	return
