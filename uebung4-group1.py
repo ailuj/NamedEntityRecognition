@@ -48,7 +48,7 @@ def load_input_file(input_file):
             for i in range(0, len(pos_tags)):
                 sentence = sentence + " " + pos_tags[i][0] + "/" + pos_tags[i][1] +"/"+str(pos)
                 pos+=1
-            print(sentence)
+            #print(sentence)
             text_list.append(sentence)
             current_sentence = ""
     f.close()
@@ -79,117 +79,117 @@ def load_annotated_sentence_list():
 
 
 def build_ruleset(annotated_sentence_list, gene_list, stop_word_list):
-	gene_stop_word_intersection=[]
-	rules=[]
-	word_frequencies={}
-	total_words=0
-	total_ngrams=[]
-	for gene in gene_list:
-		if gene in stop_word_list:
-			gene_stop_word_intersection.append(gene)
-	for sentence in annotated_sentence_list:
-		#count word frequencies
-		if "/B" in sentence:
-			annotated_words=sentence.split()
-			for annotated_word in annotated_words:
-				word=annotated_word.split("/")[0]
-				total_words+=1
-				if word in word_frequencies:
-					cnt=word_frequencies[word]
-					word_frequencies[word]=cnt+1
-				else:
-					word_frequencies[word]=1
-		#build ngrams
-			for n in range(ngram_range[0],ngram_range[1]):
-				for ngram in nltk.ngrams(annotated_words,n):
-					ngram_String=" ".join(ngram)
-					if "/B" in ngram_String:
-						occurences=ngram_String.count("/B")
+    gene_stop_word_intersection=[]
+    rules=[]
+    word_frequencies={}
+    total_words=0
+    total_ngrams=[]
+    for gene in gene_list:
+        if gene in stop_word_list:
+            gene_stop_word_intersection.append(gene)
+    for sentence in annotated_sentence_list:
+        #count word frequencies
+        if "/B" in sentence:
+            annotated_words=sentence.split()
+            for annotated_word in annotated_words:
+                word=annotated_word.split("/")[0]
+                total_words+=1
+                if word in word_frequencies:
+                    cnt=word_frequencies[word]
+                    word_frequencies[word]=cnt+1
+                else:
+                    word_frequencies[word]=1
+            #build ngrams
+            for n in range(ngram_range[0],ngram_range[1]):
+                for ngram in nltk.ngrams(annotated_words,n):
+                    ngram_String=" ".join(ngram)
+                    if "/B" in ngram_String:
+                        occurences=ngram_String.count("/B")
 
-						#if multiple B in ngram, then adapt ngram, so only one protein is considered
-						if occurences>=2:
-							for i in range (0, occurences):
-								copy_ngram=ngram
-								b_counter=0
-								final_ngram=""
-								for word in copy_ngram:
-									if "/B" in word:
-										if b_counter==i:
-											word.replace("/B","/O")
-										final_ngram=" "+word
-								total_ngrams.append(final_ngram)
-						else:
-							total_ngrams.append(ngram_String)
+                        #if multiple B in ngram, then adapt ngram, so only one protein is considered
+                        if occurences>=2:
+                            for i in range (0, occurences):
+                                copy_ngram=ngram
+                                b_counter=0
+                                final_ngram=""
+                                for word in copy_ngram:
+                                    if "/B" in word:
+                                        if b_counter==i:
+                                            word.replace("/B","/O")
+                                        final_ngram=" "+word
+                                total_ngrams.append(final_ngram)
+                        else:
+                            total_ngrams.append(ngram_String)
 
-	#print (word_frequencies)
-	final_frequencies={}
-	for word in word_frequencies:
-		if word_frequencies[word]>=minimal_word_occurences and word not in stop_word_list:
-			#print(word)n
-			final_frequencies[word]=word_frequencies[word]
+    #print (word_frequencies)
+    final_frequencies={}
+    for word in word_frequencies:
+        if word_frequencies[word]>=minimal_word_occurences and word not in stop_word_list:
+            #print(word)n
+            final_frequencies[word]=word_frequencies[word]
 
-	for ngram in total_ngrams:
-		rule=""
-		parts=ngram.split()
-		ngram_length=len(parts)
-		tag_count=0
-		word_count=0
-		for part in parts:
-			word,iob,tag=part.split("/")
-			#print(word,iob,tag)
-			if iob=="B-protein":
-				rule=rule+" [PROTEIN]"
-				tag_count+=1
-			elif word in stop_word_list:
-				rule=rule+" /"+tag
-				tag_count+=1
-			elif "." in tag:
-				tag_count+=1
-			elif word in final_frequencies:
-				word_count+=1
-				rule=rule+" "+word
-			else:
-				rule=rule+" /"+tag
-				tag_count+=1
-		if tag_count<len(parts) and word_count>minimal_occ_of_word_in_rule:
-			rules.append(rule.rstrip())
-			#print (rule)
-	#print(len(rules))
-	return rules
+    for ngram in total_ngrams:
+        rule=""
+        parts=ngram.split()
+        ngram_length=len(parts)
+        tag_count=0
+        word_count=0
+        for part in parts:
+            word,iob,tag=part.split("/")
+            #print(word,iob,tag)
+            if iob=="B-protein":
+                rule=rule+" [PROTEIN]"
+                tag_count+=1
+            elif word in stop_word_list:
+                rule=rule+" /"+tag
+                tag_count+=1
+            elif "." in tag:
+                tag_count+=1
+            elif word in final_frequencies:
+                word_count+=1
+                rule=rule+" "+word
+            else:
+                rule=rule+" /"+tag
+                tag_count+=1
+        if tag_count<len(parts) and word_count>minimal_occ_of_word_in_rule:
+            rules.append(rule.rstrip())
+        #print (rule)
+    #print(len(rules))
+    return rules
 
 def find_Entities_rulebased(sentence, rules):
-	print("Analyzing sentence \""+sentence+"\"")
-	entities=set()
-	for n in range(ngram_range[0],ngram_range[1]):
-		for ngram in nltk.ngrams(sentence.rsplit(), n):
-			for rule in rules:
-				rule_parts=rule.split()
-				if len(ngram)==len(rule_parts):
-					match=True
-					contender=""
-					contender_pos=0
-					for i in range (0,len(ngram)):
-						#print (ngram[i])
-						ngram_word,ngram_tag,pos=ngram[i].split("/")
-						if "/" in rule_parts[i]:
-							if "/"+ngram_tag!=rule_parts[i]:
-								match=False
-						elif "[PROTEIN]" in rule_parts[i]:
-							if "." in ngram_tag:
-								match=False
-							else:
-								contender_pos=pos
-								contender=ngram_word
-						elif ngram_word!=rule_parts[i]:
-							match=False
-					if match==True:
-						print (">"+contender,contender_pos+" matches rule \""+rule+"\"")
-						entities.add((contender,contender_pos))
-	return entities
+    #rint("Analyzing sentence \""+sentence+"\"")
+    entities=set()
+    for n in range(ngram_range[0],ngram_range[1]):
+        for ngram in nltk.ngrams(sentence.rsplit(), n):
+            for rule in rules:
+                rule_parts=rule.split()
+                if len(ngram)==len(rule_parts):
+                    match=True
+                    contender=""
+                    contender_pos=0
+                    for i in range (0,len(ngram)):
+                        #print (ngram[i])
+                        ngram_word,ngram_tag,pos=ngram[i].split("/")
+                        if "/" in rule_parts[i]:
+                            if "/"+ngram_tag!=rule_parts[i]:
+                                match=False
+                        elif "[PROTEIN]" in rule_parts[i]:
+                            if "." in ngram_tag:
+                                match=False
+                            else:
+                                contender_pos=pos
+                                contender=ngram_word
+                        elif ngram_word!=rule_parts[i]:
+                            match=False
+                    if match==True:
+                        #print (">"+contender,contender_pos+" matches rule \""+rule+"\"")
+                        entities.add((contender,contender_pos))
+    return entities
 
 def find_Entities_structbased(sentence):
     words = sentence.split(" ")
-    tagged_sentence = ""
+    entities = set()
     for index, word in enumerate(words):
         conditions_true = 0
         tags = word.split("/")
@@ -205,25 +205,37 @@ def find_Entities_structbased(sentence):
                     elif any(char.isupper() for char in tags[0][1:]):
                         conditions_true = conditions_true + 1
             if conditions_true > 1:
-                tagged_sentence = tagged_sentence + tags[0] + "/" + tags[1] + "/1 "
-            else:
-                tagged_sentence = tagged_sentence + tags[0] + "/" + tags[1] + "/0 "
+                entities.add((tags[0], index))
         except:
             pass
-    return tagged_sentence
+    return entities
 
 def find_Entities_dictbased(sentence):
+    return set()
+
+
+def find_Entities(input_file, rules, output_file):
+    for sentence in input_file:
+        output_sentence = " "
+        potential_Entities_by_Rule=find_Entities_rulebased(sentence, rules)
+        potential_Entities_by_Struct=find_Entities_structbased(sentence)
+        potenital_Entities_by_dict=find_Entities_dictbased(sentence)
+        print(potential_Entities_by_Rule)
+        rule_n_struct = potential_Entities_by_Rule & potential_Entities_by_Struct
+        rule_n_dict = potential_Entities_by_Rule & potenital_Entities_by_dict
+        struct_n_dict = potential_Entities_by_Struct & potenital_Entities_by_dict
+        possible_proteins = rule_n_struct & rule_n_dict & struct_n_dict
+        for word in sentence:
+            if word in possible_proteins:
+                output_sentence = output_sentence + "\n" + word + "\t B-protein"
+    else:
+        output_sentence = output_sentence + "\n" + word + "\t 0"
+    write_sentence_to_file(output_sentence, output_file)
+    #calc occurences of potential proteins and decide on I or B-protein tag
+    #return iob-tagged strings
+
+def write_sentence_to_file(sentence, output_file):
     return
-
-
-def find_Entities(input_file, rules):
-	for sentence in input_file:
-		potential_Entities_by_Rule=find_Entities_rulebased(sentence, rules)
-		potential_Entities_by_Struct=find_Entities_structbased(sentence)
-		potenital_Entities_by_dict=find_Entities_dictbased(sentence)
-		print(potential_Entities_by_Rule)
-		#calc occurences of potential proteins and decide on I or B-protein tag
-		#return iob-tagged strings
 
 def write_results_to_file(iob_tagged_input, input_file):
     return
@@ -232,6 +244,7 @@ def write_results_to_file(iob_tagged_input, input_file):
 def main(argv):
     parser = argparse.ArgumentParser()
     parser.add_argument("input_file", help="input file for annotation")
+    parser.add_argument("output_file", help="output file to save results")
     args = parser.parse_args()
 
     # load gene names
@@ -242,7 +255,7 @@ def main(argv):
     annotated_sentence_list = load_annotated_sentence_list()
     rules = build_ruleset(annotated_sentence_list, gene_list, stop_word_list)
     annotated_input = load_input_file(args.input_file)
-    iob_tagged_input = find_Entities(annotated_input, rules)
+    iob_tagged_input = find_Entities(annotated_input, rules, args.output_file)
     write_results_to_file(iob_tagged_input, args.input_file)
 
 
