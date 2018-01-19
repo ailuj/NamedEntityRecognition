@@ -35,8 +35,10 @@ def load_input_file(input_file):
     f = open(input_file, "r")
     text_list = []
     current_sentence = ""
+    pos=0
     for line in f.readlines():
         if line != "\n":
+            pos=0
             word, tag = line.split("\t")
             current_sentence = current_sentence + " " + word
         else:
@@ -44,7 +46,9 @@ def load_input_file(input_file):
             pos_tags = nltk.pos_tag(token)
             sentence = ""
             for i in range(0, len(pos_tags)):
-                sentence = sentence + " " + pos_tags[i][0] + "/" + pos_tags[i][1]
+                sentence = sentence + " " + pos_tags[i][0] + "/" + pos_tags[i][1] +"/"+str(pos)
+                pos+=1
+            print(sentence)
             text_list.append(sentence)
             current_sentence = ""
     f.close()
