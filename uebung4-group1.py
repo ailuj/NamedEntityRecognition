@@ -210,20 +210,30 @@ def find_Entities_structbased(sentence):
             pass
     return entities
 
-def find_Entities_dictbased(sentence):
-    return set()
+def find_Entities_dictbased(sentence, gene_list):
+    words = sentence.split(" ")
+    entities = set()
+
+    #test for pos-tags?
+    for word in words:
+        token = word.split("/")
+        if token[0] in gene_list:
+            entities.add((token[0], token[2]))
+
+    return entities
 
 
-def find_Entities(input_file, rules, output_file):
+def find_Entities(input_file, rules, output_file, gene_list):
     for sentence in input_file:
         output_sentence = " "
         potential_Entities_by_Rule=find_Entities_rulebased(sentence, rules)
         potential_Entities_by_Struct=find_Entities_structbased(sentence)
-        potenital_Entities_by_dict=find_Entities_dictbased(sentence)
-        print(potential_Entities_by_Rule)
+        potential_Entities_by_dict=find_Entities_dictbased(sentence, gene_list)
+        #print(potential_Entities_by_Rule)
+        print(potential_Entities_by_dict)
         rule_n_struct = potential_Entities_by_Rule & potential_Entities_by_Struct
-        rule_n_dict = potential_Entities_by_Rule & potenital_Entities_by_dict
-        struct_n_dict = potential_Entities_by_Struct & potenital_Entities_by_dict
+        rule_n_dict = potential_Entities_by_Rule & potential_Entities_by_dict
+        struct_n_dict = potential_Entities_by_Struct & potential_Entities_by_dict
         possible_proteins = rule_n_struct & rule_n_dict & struct_n_dict
         for word in sentence:
             if word in possible_proteins:
@@ -255,7 +265,7 @@ def main(argv):
     annotated_sentence_list = load_annotated_sentence_list()
     rules = build_ruleset(annotated_sentence_list, gene_list, stop_word_list)
     annotated_input = load_input_file(args.input_file)
-    iob_tagged_input = find_Entities(annotated_input, rules, args.output_file)
+    iob_tagged_input = find_Entities(annotated_input, rules, args.output_file, gene_list)
     write_results_to_file(iob_tagged_input, args.input_file)
 
 
