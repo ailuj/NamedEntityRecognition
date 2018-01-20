@@ -51,6 +51,16 @@ def load_input_file(input_file):
             #print(sentence)
             text_list.append(sentence)
             current_sentence = ""
+
+    if current_sentence != "":
+        token = nltk.regexp_tokenize(current_sentence, "[a-zA-Z'`0-9\.%<>=]+")
+        pos_tags = nltk.pos_tag(token)
+        sentence = ""
+        for i in range(0, len(pos_tags)):
+            sentence = sentence + " " + pos_tags[i][0] + "/" + pos_tags[i][1] +"/"+str(pos)
+            pos+=1
+        text_list.append(sentence)
+
     f.close()
     # print (text_list)
     return text_list
@@ -74,6 +84,17 @@ def load_annotated_sentence_list():
             text_list.append(sentence)
             current_iob_tags = []
             current_sentence = ""
+
+    if current_sentence != "":
+        token = nltk.regexp_tokenize(current_sentence, "[a-zA-Z'`0-9\.%<>=]+")
+        pos_tags = nltk.pos_tag(token)
+        sentence = ""
+        for i in range(0, len(pos_tags)):
+            sentence = sentence + " " + pos_tags[i][0] + "/" + current_iob_tags[i] + "/" + pos_tags[i][1]
+        text_list.append(sentence)
+        current_iob_tags = []
+        current_sentence = ""
+
     f.close()
     return text_list
 
@@ -205,7 +226,7 @@ def find_Entities_structbased(sentence):
                     elif any(char.isupper() for char in tags[0][1:]):
                         conditions_true = conditions_true + 1
             if conditions_true > 1:
-                entities.add((tags[0], index))
+                entities.add((tags[0], str(index)))
         except:
             pass
     return entities
@@ -224,30 +245,46 @@ def find_Entities_dictbased(sentence, gene_list):
 
 
 def find_Entities(input_file, rules, output_file, gene_list):
+    iob_tagged_sentences = []
     for sentence in input_file:
-        output_sentence = " "
+        output_sentence = ""
         potential_Entities_by_Rule=find_Entities_rulebased(sentence, rules)
         potential_Entities_by_Struct=find_Entities_structbased(sentence)
         potential_Entities_by_dict=find_Entities_dictbased(sentence, gene_list)
         #print(potential_Entities_by_Rule)
-        print(potential_Entities_by_dict)
+        #print(potential_Entities_by_Struct)
+        #print(potential_Entities_by_dict)
         rule_n_struct = potential_Entities_by_Rule & potential_Entities_by_Struct
         rule_n_dict = potential_Entities_by_Rule & potential_Entities_by_dict
         struct_n_dict = potential_Entities_by_Struct & potential_Entities_by_dict
         possible_proteins = rule_n_struct & rule_n_dict & struct_n_dict
-        for word in sentence:
-            if word in possible_proteins:
-                output_sentence = output_sentence + "\n" + word + "\t B-protein"
-    else:
-        output_sentence = output_sentence + "\n" + word + "\t 0"
-    write_sentence_to_file(output_sentence, output_file)
+        #print(possible_proteins)
+        for word in sentence.split():
+            token = word.split("/")
+            if (token[0], token[2]) in possible_proteins:
+                output_sentence = output_sentence + "\n" + token[0] + "\t B-protein"
+            else:
+                output_sentence = output_sentence + "\n" + token[0] + "\t 0"
+        #write_sentence_to_file(output_sentence, output_file)
+        iob_tagged_sentences.append(output_sentence+"\n")
+
     #calc occurences of potential proteins and decide on I or B-protein tag
-    #return iob-tagged strings
+    
+    return iob_tagged_sentences
 
 def write_sentence_to_file(sentence, output_file):
     return
 
-def write_results_to_file(iob_tagged_input, input_file):
+def write_results_to_file(iob_tagged_input, output_file):
+    file = open("output.iob", "w")
+
+    iob_tagged_input[0] = iob_tagged_input[0][1:]
+
+    for sent in iob_tagged_input:
+        file.write(sent)
+
+    file.close()
+
     return
 
 
@@ -266,7 +303,7 @@ def main(argv):
     rules = build_ruleset(annotated_sentence_list, gene_list, stop_word_list)
     annotated_input = load_input_file(args.input_file)
     iob_tagged_input = find_Entities(annotated_input, rules, args.output_file, gene_list)
-    write_results_to_file(iob_tagged_input, args.input_file)
+    write_results_to_file(iob_tagged_input, args.output_file)
 
 
 if __name__ == '__main__':
