@@ -4,7 +4,7 @@ import nltk
 
 
 minimal_word_occurences=2
-ngram_range=(2,5)
+ngram_range=(3,6)
 minimal_occ_of_word_in_rule=1
 
 
@@ -168,7 +168,7 @@ def build_ruleset(annotated_sentence_list, gene_list, stop_word_list):
             else:
                 rule=rule+" /"+tag
                 tag_count+=1
-        if tag_count<len(parts) and word_count>=minimal_occ_of_word_in_rule:
+        if word_count>=minimal_occ_of_word_in_rule:
             rules.append(rule.rstrip())
             print (rule)
     #print(len(rules))
