@@ -211,6 +211,7 @@ def find_Entities_structbased(sentence):
         conditions_true = 0
         tags = word.split("/")
         try:
+            #RAFTK
             if tags[1] == 'NN' or tags[1] == 'NNP' or tags[1] == 'NNS' or tags[1] == 'CD':
                 if any(char.isdigit() for char in tags[0]):
                     conditions_true = conditions_true + 1
@@ -221,8 +222,8 @@ def find_Entities_structbased(sentence):
                         conditions_true = conditions_true + 1
                     elif any(char.isupper() for char in tags[0][1:]):
                         conditions_true = conditions_true + 1
-            if conditions_true > 1:
-                entities.add((tags[0], str(index)))
+            if conditions_true >= 1:
+                entities.add((tags[0], str(index-1)))
         except:
             pass
     return entities
@@ -259,7 +260,9 @@ def find_Entities(input_file, rules, output_file, gene_list):
         rule_n_dict = potential_Entities_by_Rule & potential_Entities_by_dict
         struct_n_dict = potential_Entities_by_Struct & potential_Entities_by_dict
         possible_proteins = rule_n_struct & rule_n_dict & struct_n_dict
-        #print(possible_proteins)
+
+        print(possible_proteins)
+        print("/n")
         for word in sentence.split():
             token = word.split("/")
             if (token[0], token[2]) in possible_proteins:
