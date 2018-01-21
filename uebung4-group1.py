@@ -3,13 +3,9 @@ import argparse
 import nltk
 
 
-# TODO ruleset normalization, remove ".", remove unspecific rules, remove single protein rules
-# TODO named entity recognition methods
-# TODO write results to file
-
-minimal_word_occurences=1
-ngram_range=(4,8)
-minimal_occ_of_word_in_rule=2
+minimal_word_occurences=2
+ngram_range=(2,5)
+minimal_occ_of_word_in_rule=1
 
 
 def load_gene_list():
@@ -146,7 +142,7 @@ def build_ruleset(annotated_sentence_list, gene_list, stop_word_list):
     final_frequencies={}
     for word in word_frequencies:
         if word_frequencies[word]>=minimal_word_occurences and word not in stop_word_list:
-            #print(word)n
+            #print(word)
             final_frequencies[word]=word_frequencies[word]
 
     for ngram in total_ngrams:
@@ -172,9 +168,9 @@ def build_ruleset(annotated_sentence_list, gene_list, stop_word_list):
             else:
                 rule=rule+" /"+tag
                 tag_count+=1
-        if tag_count<len(parts) and word_count>minimal_occ_of_word_in_rule:
+        if tag_count<len(parts) and word_count>=minimal_occ_of_word_in_rule:
             rules.append(rule.rstrip())
-        #print (rule)
+            print (rule)
     #print(len(rules))
     return rules
 
@@ -247,10 +243,15 @@ def find_Entities_dictbased(sentence, gene_list):
 def find_Entities(input_file, rules, output_file, gene_list):
     iob_tagged_sentences = []
     for sentence in input_file:
+        print (sentence)
         output_sentence = ""
         potential_Entities_by_Rule=find_Entities_rulebased(sentence, rules)
+        print(potential_Entities_by_Rule)
         potential_Entities_by_Struct=find_Entities_structbased(sentence)
+        print(potential_Entities_by_Struct)
         potential_Entities_by_dict=find_Entities_dictbased(sentence, gene_list)
+        print(potential_Entities_by_dict)
+        #print("\n")
         #print(potential_Entities_by_Rule)
         #print(potential_Entities_by_Struct)
         #print(potential_Entities_by_dict)
@@ -272,8 +273,6 @@ def find_Entities(input_file, rules, output_file, gene_list):
     
     return iob_tagged_sentences
 
-def write_sentence_to_file(sentence, output_file):
-    return
 
 def write_results_to_file(iob_tagged_input, output_file):
     file = open("output.iob", "w")
