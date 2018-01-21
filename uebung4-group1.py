@@ -247,11 +247,11 @@ def find_Entities(input_file, rules, output_file, gene_list):
         print (sentence)
         output_sentence = ""
         potential_Entities_by_Rule=find_Entities_rulebased(sentence, rules)
-        print(potential_Entities_by_Rule)
+        #print(potential_Entities_by_Rule)
         potential_Entities_by_Struct=find_Entities_structbased(sentence)
-        print(potential_Entities_by_Struct)
+        #print(potential_Entities_by_Struct)
         potential_Entities_by_dict=find_Entities_dictbased(sentence, gene_list)
-        print(potential_Entities_by_dict)
+        #print(potential_Entities_by_dict)
         #print("\n")
         #print(potential_Entities_by_Rule)
         #print(potential_Entities_by_Struct)
@@ -260,15 +260,14 @@ def find_Entities(input_file, rules, output_file, gene_list):
         rule_n_dict = potential_Entities_by_Rule & potential_Entities_by_dict
         struct_n_dict = potential_Entities_by_Struct & potential_Entities_by_dict
         possible_proteins = rule_n_struct | rule_n_dict | struct_n_dict
-
         print(possible_proteins)
-        print("/n")
+        print("\n")
         for word in sentence.split():
             token = word.split("/")
             if (token[0], token[2]) in possible_proteins:
                 output_sentence = output_sentence + "\n" + token[0] + "\t B-protein"
             else:
-                output_sentence = output_sentence + "\n" + token[0] + "\t 0"
+                output_sentence = output_sentence + "\n" + token[0] + "\t O"
         #write_sentence_to_file(output_sentence, output_file)
         iob_tagged_sentences.append(output_sentence+"\n")
 
