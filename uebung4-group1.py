@@ -259,7 +259,7 @@ def find_Entities(input_file, rules, output_file, gene_list):
         rule_n_struct = potential_Entities_by_Rule & potential_Entities_by_Struct
         rule_n_dict = potential_Entities_by_Rule & potential_Entities_by_dict
         struct_n_dict = potential_Entities_by_Struct & potential_Entities_by_dict
-        possible_proteins = rule_n_struct & rule_n_dict & struct_n_dict
+        possible_proteins = rule_n_struct | rule_n_dict | struct_n_dict
 
         print(possible_proteins)
         print("/n")
