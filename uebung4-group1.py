@@ -45,7 +45,7 @@ def load_input_file(input_file):
             pos_tags = nltk.pos_tag(token)
             sentence = ""
             for i in range(0, len(pos_tags)):
-                sentence = sentence + " " + pos_tags[i][0] + "/" + pos_tags[i][1] +"/"+str(pos)
+                sentence = sentence + " " + pos_tags[i][0] + "\\" + pos_tags[i][1] +"\\"+str(pos)
                 pos+=1
             #print(sentence)
             text_list.append(sentence)
@@ -57,7 +57,7 @@ def load_input_file(input_file):
         pos_tags = nltk.pos_tag(token)
         sentence = ""
         for i in range(0, len(pos_tags)):
-            sentence = sentence + " " + pos_tags[i][0] + "/" + pos_tags[i][1] +"/"+str(pos)
+            sentence = sentence + " " + pos_tags[i][0] + "\\" + pos_tags[i][1] +"\\"+str(pos)
             pos+=1
         text_list.append(sentence)
 
@@ -81,7 +81,7 @@ def load_annotated_sentence_list():
             pos_tags = nltk.pos_tag(token)
             sentence = ""
             for i in range(0, len(pos_tags)):
-                sentence = sentence + " " + pos_tags[i][0] + "/" + current_iob_tags[i] + "/" + pos_tags[i][1]
+                sentence = sentence + " " + pos_tags[i][0] + "\\" + current_iob_tags[i] + "\\" + pos_tags[i][1]
             text_list.append(sentence)
             current_iob_tags = []
             current_sentence = ""
@@ -92,7 +92,7 @@ def load_annotated_sentence_list():
         pos_tags = nltk.pos_tag(token)
         sentence = ""
         for i in range(0, len(pos_tags)):
-            sentence = sentence + " " + pos_tags[i][0] + "/" + current_iob_tags[i] + "/" + pos_tags[i][1]
+            sentence = sentence + " " + pos_tags[i][0] + "\\" + current_iob_tags[i] + "\\" + pos_tags[i][1]
         text_list.append(sentence)
         current_iob_tags = []
         current_sentence = ""
@@ -115,7 +115,7 @@ def build_ruleset(annotated_sentence_list, gene_list, stop_word_list):
         if "/B" in sentence:
             annotated_words=sentence.split()
             for annotated_word in annotated_words:
-                word=annotated_word.split("/")[0]
+                word=annotated_word.split("\\")[0]
                 total_words+=1
                 if word in word_frequencies:
                     cnt=word_frequencies[word]
@@ -158,13 +158,13 @@ def build_ruleset(annotated_sentence_list, gene_list, stop_word_list):
         tag_count=0
         word_count=0
         for part in parts:
-            word,iob,tag=part.split("/")
+            word,iob,tag=part.split("\\")
             #print(word,iob,tag)
             if iob=="B-protein":
                 rule=rule+" [PROTEIN]"
                 tag_count+=1
             elif word in stop_word_list:
-                rule=rule+" /"+tag
+                rule=rule+" \\"+tag
                 tag_count+=1
             elif "." in tag:
                 tag_count+=1
@@ -172,7 +172,7 @@ def build_ruleset(annotated_sentence_list, gene_list, stop_word_list):
                 word_count+=1
                 rule=rule+" "+word
             else:
-                rule=rule+" /"+tag
+                rule=rule+" \\"+tag
                 tag_count+=1
         if word_count>=minimal_occ_of_word_in_rule:
             rules.append(rule.rstrip())
@@ -193,9 +193,9 @@ def find_Entities_rulebased(sentence, rules):
                     contender_pos=0
                     for i in range (0,len(ngram)):
                         #print (ngram[i])
-                        ngram_word,ngram_tag,pos=ngram[i].split("/")
-                        if "/" in rule_parts[i]:
-                            if "/"+ngram_tag!=rule_parts[i]:
+                        ngram_word,ngram_tag,pos=ngram[i].split("\\")
+                        if "\\" in rule_parts[i]:
+                            if "\\"+ngram_tag!=rule_parts[i]:
                                 match=False
                         elif "[PROTEIN]" in rule_parts[i]:
                             if "." in ngram_tag:
@@ -215,7 +215,7 @@ def find_Entities_structbased(sentence):
     entities = set()
     for index, word in enumerate(words):
         conditions_true = 0
-        tags = word.split("/")
+        tags = word.split("\\")
         try:
             #RAFTK
             if tags[1] == 'NN' or tags[1] == 'NNP' or tags[1] == 'NNS' or tags[1] == 'CD':
@@ -235,12 +235,13 @@ def find_Entities_structbased(sentence):
     return entities
 
 def find_Entities_dictbased(sentence, gene_list):
+    #print(sentence)
     words = sentence.split()
     entities = set()
 
     #test for pos-tags?
     for word in words:
-        token = word.split("/")
+        token = word.split("\\")
         for gene in gene_list:
             token_set = set(token[0])
             if jaccard(token_set, gene) == 1.0:
@@ -277,7 +278,7 @@ def find_Entities(input_file, rules, output_file, gene_list):
         #print(possible_proteins)
         #print("\n")
         for word in sentence.split():
-            token = word.split("/")
+            token = word.split("\\")
             if (token[0], token[2]) in possible_proteins:
                 output_sentence = output_sentence + "\n" + token[0] + "\tB-protein"
             else:
