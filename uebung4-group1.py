@@ -38,7 +38,9 @@ def load_input_file(input_file):
             word, tag = line.split("\t")
             current_sentence = current_sentence + " " + word
         else:
-            token = nltk.regexp_tokenize(current_sentence, "[a-zA-Z'`0-9\.%<>=]+")
+            #token = nltk.regexp_tokenize(current_sentence, "[a-zA-Z'`0-9\.%<>=]+")
+            token = nltk.word_tokenize(current_sentence)
+            #print(token)
             pos_tags = nltk.pos_tag(token)
             sentence = ""
             for i in range(0, len(pos_tags)):
@@ -49,7 +51,8 @@ def load_input_file(input_file):
             current_sentence = ""
 
     if current_sentence != "":
-        token = nltk.regexp_tokenize(current_sentence, "[a-zA-Z'`0-9\.%<>=]+")
+        #token = nltk.regexp_tokenize(current_sentence, "[a-zA-Z'`0-9\.%<>=]+")
+        token = nltk.word_tokenize(current_sentence)
         pos_tags = nltk.pos_tag(token)
         sentence = ""
         for i in range(0, len(pos_tags)):
@@ -58,7 +61,7 @@ def load_input_file(input_file):
         text_list.append(sentence)
 
     f.close()
-    # print (text_list)
+    #print (text_list)
     return text_list
 
 def load_annotated_sentence_list():
@@ -72,7 +75,8 @@ def load_annotated_sentence_list():
             current_sentence = current_sentence + " " + word
             current_tags = current_iob_tags.append(tag.rstrip())
         else:
-            token = nltk.regexp_tokenize(current_sentence, "[a-zA-Z'`0-9\.%<>=]+")
+            #token = nltk.regexp_tokenize(current_sentence, "[a-zA-Z'`0-9\.%<>=]+")
+            token = nltk.word_tokenize(current_sentence)
             pos_tags = nltk.pos_tag(token)
             sentence = ""
             for i in range(0, len(pos_tags)):
@@ -82,7 +86,8 @@ def load_annotated_sentence_list():
             current_sentence = ""
 
     if current_sentence != "":
-        token = nltk.regexp_tokenize(current_sentence, "[a-zA-Z'`0-9\.%<>=]+")
+        #token = nltk.regexp_tokenize(current_sentence, "[a-zA-Z'`0-9\.%<>=]+")
+        token = nltk.word_tokenize(current_sentence)
         pos_tags = nltk.pos_tag(token)
         sentence = ""
         for i in range(0, len(pos_tags)):
@@ -170,7 +175,7 @@ def build_ruleset(annotated_sentence_list, gene_list, stop_word_list):
                 tag_count+=1
         if word_count>=minimal_occ_of_word_in_rule:
             rules.append(rule.rstrip())
-            print (rule)
+            #print (rule)
     #print(len(rules))
     return rules
 
@@ -244,7 +249,7 @@ def find_Entities_dictbased(sentence, gene_list):
 def find_Entities(input_file, rules, output_file, gene_list):
     iob_tagged_sentences = []
     for sentence in input_file:
-        print (sentence)
+        #print (sentence)
         output_sentence = ""
         potential_Entities_by_Rule=find_Entities_rulebased(sentence, rules)
         #print(potential_Entities_by_Rule)
@@ -260,8 +265,8 @@ def find_Entities(input_file, rules, output_file, gene_list):
         rule_n_dict = potential_Entities_by_Rule & potential_Entities_by_dict
         struct_n_dict = potential_Entities_by_Struct & potential_Entities_by_dict
         possible_proteins = rule_n_struct | rule_n_dict | struct_n_dict
-        print(possible_proteins)
-        print("\n")
+        #print(possible_proteins)
+        #print("\n")
         for word in sentence.split():
             token = word.split("/")
             if (token[0], token[2]) in possible_proteins:
@@ -282,7 +287,7 @@ def write_results_to_file(iob_tagged_input, output_file):
     iob_tagged_input[0] = iob_tagged_input[0][1:]
 
     for sent in iob_tagged_input:
-        print (sent)
+        #print (sent)
         file.write(sent)
 
     file.close()
