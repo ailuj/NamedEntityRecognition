@@ -1,0 +1,3 @@
+#script uses python3
+nltk
+
