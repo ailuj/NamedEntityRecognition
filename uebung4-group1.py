@@ -265,9 +265,9 @@ def find_Entities(input_file, rules, output_file, gene_list):
         for word in sentence.split():
             token = word.split("/")
             if (token[0], token[2]) in possible_proteins:
-                output_sentence = output_sentence + "\n" + token[0] + "\t B-protein"
+                output_sentence = output_sentence + "\n" + token[0] + "\tB-protein"
             else:
-                output_sentence = output_sentence + "\n" + token[0] + "\t O"
+                output_sentence = output_sentence + "\n" + token[0] + "\tO"
         #write_sentence_to_file(output_sentence, output_file)
         iob_tagged_sentences.append(output_sentence+"\n")
 
@@ -277,11 +277,12 @@ def find_Entities(input_file, rules, output_file, gene_list):
 
 
 def write_results_to_file(iob_tagged_input, output_file):
-    file = open("output.iob", "w")
+    file = open(output_file, "w")
 
     iob_tagged_input[0] = iob_tagged_input[0][1:]
 
     for sent in iob_tagged_input:
+        print (sent)
         file.write(sent)
 
     file.close()
