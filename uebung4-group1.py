@@ -12,7 +12,8 @@ def load_gene_list():
     f = open("human-genenames.txt", "r")
     gene_list = []
     for line in f.readlines():
-        gene_list.append(line.rstrip())
+        #transform to set for jaccard distance
+        gene_list.append(set(line.rstrip()))
     f.close()
     return gene_list
 
@@ -234,17 +235,25 @@ def find_Entities_structbased(sentence):
     return entities
 
 def find_Entities_dictbased(sentence, gene_list):
-    words = sentence.split(" ")
+    words = sentence.split()
     entities = set()
 
     #test for pos-tags?
     for word in words:
         token = word.split("/")
-        if token[0] in gene_list:
-            entities.add((token[0], token[2]))
+        for gene in gene_list:
+            token_set = set(token[0])
+            if jaccard(token_set, gene) == 1.0:
+                entities.add((token[0], token[2]))
+                break
+                
+        #if token[0] in gene_list:
+        #    entities.add((token[0], token[2]))
 
     return entities
 
+def jaccard(set1, set2):
+    return (len(set.intersection(*[set1, set2]))) / (len(set.union(*[set1, set2])))
 
 def find_Entities(input_file, rules, output_file, gene_list):
     iob_tagged_sentences = []
