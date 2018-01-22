@@ -112,7 +112,8 @@ def build_ruleset(annotated_sentence_list, gene_list, stop_word_list):
             gene_stop_word_intersection.append(gene)
     for sentence in annotated_sentence_list:
         #count word frequencies
-        if "/B" in sentence:
+        #print(sentence)
+        if "\B" in sentence:
             annotated_words=sentence.split()
             for annotated_word in annotated_words:
                 word=annotated_word.split("\\")[0]
@@ -123,11 +124,12 @@ def build_ruleset(annotated_sentence_list, gene_list, stop_word_list):
                 else:
                     word_frequencies[word]=1
             #build ngrams
+            #print(sentence)
             for n in range(ngram_range[0],ngram_range[1]):
                 for ngram in nltk.ngrams(annotated_words,n):
                     ngram_String=" ".join(ngram)
-                    if "/B" in ngram_String:
-                        occurences=ngram_String.count("/B")
+                    if "\B" in ngram_String:
+                        occurences=ngram_String.count("\B")
 
                         #if multiple B in ngram, then adapt ngram, so only one protein is considered
                         if occurences>=2:
@@ -138,12 +140,12 @@ def build_ruleset(annotated_sentence_list, gene_list, stop_word_list):
                                 for word in copy_ngram:
                                     if "/B" in word:
                                         if b_counter==i:
-                                            word.replace("/B","/O")
+                                            word.replace("\B","\O")
                                         final_ngram=" "+word
                                 total_ngrams.append(final_ngram)
                         else:
                             total_ngrams.append(ngram_String)
-
+    #print("ngrams "+str(total_ngrams))
     #print (word_frequencies)
     final_frequencies={}
     for word in word_frequencies:
