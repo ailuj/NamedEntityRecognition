@@ -4,7 +4,7 @@ import nltk
 
 
 minimal_word_occurences=2
-ngram_range=(3,6)
+ngram_range=(2,6)
 minimal_occ_of_word_in_rule=1
 
 
@@ -13,7 +13,7 @@ def load_gene_list():
     gene_list = []
     for line in f.readlines():
         #transform to set for jaccard distance
-        gene_list.append(set(line.rstrip()))
+        gene_list.append(line.rstrip())
     f.close()
     return gene_list
 
@@ -244,14 +244,14 @@ def find_Entities_dictbased(sentence, gene_list):
     #test for pos-tags?
     for word in words:
         token = word.split("\\")
-        for gene in gene_list:
-            token_set = set(token[0])
-            if jaccard(token_set, gene) == 1.0:
-                entities.add((token[0], token[2]))
-                break
+        #for gene in gene_list:
+        #    token_set = set(token[0])
+        #    if jaccard(token_set, gene) == 1.0:
+        #        entities.add((token[0], token[2]))
+        #        break
                 
-        #if token[0] in gene_list:
-        #    entities.add((token[0], token[2]))
+        if token[0] in gene_list:
+            entities.add((token[0], token[2]))
 
     return entities
 
